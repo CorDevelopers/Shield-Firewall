@@ -12,7 +12,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/yourusername/shield-js
+      link: https://github.com/CorDevelopers/Shield-Firewall
 
 features:
   - title: AI-Powered Protection
@@ -70,5 +70,5 @@ Traditional web application firewalls only protect server-side endpoints. Core D
 
 ## License
 
-MIT License - see [LICENSE](https://github.com/yourusername/shield-js/blob/main/LICENSE) for details.
+MIT License - see [LICENSE](https://github.com/CorDevelopers/Shield-Firewall/blob/main/LICENSE) for details.
 
