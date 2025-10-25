@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd docs && npx vitepress build .",
+  "outputDirectory": "docs/.vitepress/dist",
+  "installCommand": "npm install"
+}
