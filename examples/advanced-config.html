@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIELD.js Advanced Configuration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .config-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .protected { background: #e8f5e8; border: 1px solid #4caf50; color: #2e7d32; }
+        .blocked { background: #ffebee; border: 1px solid #f44336; color: #c62828; }
+        .dashboard { position: fixed; top: 20px; right: 20px; width: 250px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        .threat-item { padding: 5px; margin: 5px 0; border-radius: 3px; font-size: 12px; }
+        .threat-item.blocked { background: #ffebee; border-left: 3px solid #f44336; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h4>🛡️ SHIELD.js Dashboard</h4>
+        <div id="threat-log"></div>
+    </div>
+
+    <h1>SHIELD.js Advanced Configuration</h1>
+
+    <div class="status protected" id="status">
+        Initializing SHIELD.js with advanced configuration...
+    </div>
+
+    <div class="config-section">
+        <h2>Configuration Options</h2>
+        <p>SHIELD.js initialized with custom threat patterns and behavioral analysis.</p>
+    </div>
+
+    <div class="config-section">
+        <h2>Network Monitoring</h2>
+        <button onclick="makeRequest()">Make Test Request</button>
+        <div id="network-result"></div>
+    </div>
+
+    <div class="config-section">
+        <h2>Behavioral Analysis</h2>
+        <button onclick="simulateBehavior()">Simulate User Behavior</button>
+        <div id="behavior-result"></div>
+    </div>
+
+    <!-- Load SHIELD.js -->
+    <script src="../dist/shield-firewall.min.js"></script>
+
+    <script>
+        let shield;
+
+        // Initialize SHIELD.js with advanced configuration
+        async function initShield() {
+            try {
+                shield = new ShieldFirewall();
+
+                await shield.configure({
+                    protectionLevel: 'maximum',
+                    features: {
+                        domProtection: true,
+                        networkInterception: true,
+                        behaviorAnalysis: true,
+                        predictiveDetection: true,
+                        autoRecovery: true,
+                        realTimeMonitoring: true
+                    },
+                    threatDetection: {
+                        sensitivity: 0.9,
+                        customPatterns: [
+                            'script.*alert',
+                            'onerror.*alert',
+                            'javascript:',
+                            'eval\\(',
+                            'document\\.cookie',
+                            'innerHTML.*script',
+                            'outerHTML.*script'
+                        ],
+                        anomalyThreshold: 0.7
+                    },
+                    logging: {
+                        level: 'detailed',
+                        includeStackTraces: true,
+                        maxEntries: 100
+                    }
+                });
+
+                await shield.initialize();
+                await shield.start();
+
+                // Set up event listeners
+                document.addEventListener('shield:threat-detected', handleThreat);
+                document.addEventListener('shield:threat-blocked', handleThreatBlocked);
+
+                document.getElementById('status').textContent = 'SHIELD.js advanced protection active';
+            } catch (error) {
+                document.getElementById('status').textContent = `SHIELD.js initialization failed: ${error.message}`;
+                document.getElementById('status').className = 'status blocked';
+            }
+        }
+
+        function handleThreat(event) {
+            const threat = event.detail;
+            logThreat(`Threat detected: ${threat.type} (${threat.severity})`, 'blocked');
+        }
+
+        function handleThreatBlocked(event) {
+            const threat = event.detail;
+            logThreat(`Threat blocked: ${threat.type}`, 'blocked');
+        }
+
+        function logThreat(message, type) {
+            const logEntry = document.createElement('div');
+            logEntry.className = `threat-item ${type}`;
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            document.getElementById('threat-log').prepend(logEntry);
+        }
+
+        async function makeRequest() {
+            try {
+                const response = await fetch('https://httpbin.org/get?test=parameter');
+                const data = await response.json();
+                document.getElementById('network-result').innerHTML = '<p>Request completed successfully</p>';
+            } catch (error) {
+                document.getElementById('network-result').innerHTML = `<p>Request blocked: ${error.message}</p>`;
+            }
+        }
+
+        function simulateBehavior() {
+            // Simulate normal user behavior
+            const behaviors = [
+                () => document.body.click(),
+                () => window.scrollTo(0, 100),
+                () => document.querySelector('button').focus(),
+                () => document.body.dispatchEvent(new KeyboardEvent('keydown', {key: 'a'}))
+            ];
+
+            behaviors.forEach((behavior, index) => {
+                setTimeout(behavior, index * 500);
+            });
+
+            document.getElementById('behavior-result').innerHTML = '<p>Behavioral simulation completed</p>';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initShield);
+    </script>
+</body>
+</html>

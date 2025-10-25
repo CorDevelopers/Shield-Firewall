@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIELD.js React/Vue Integration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .protected { background: #e8f5e8; border: 1px solid #4caf50; color: #2e7d32; }
+        .blocked { background: #ffebee; border: 1px solid #f44336; color: #c62828; }
+        .code-block { background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>SHIELD.js Framework Integration</h1>
+
+    <div class="status protected" id="status">
+        SHIELD.js ready for framework integration
+    </div>
+
+    <h2>React Integration Example</h2>
+    <div class="code-block">
+// React Component with SHIELD.js
+import React, { useEffect, useRef } from 'react';
+import { ShieldFirewall } from 'shield-firewall';
+
+function SecureApp() {
+  const shieldRef = useRef(null);
+
+  useEffect(() => {
+    const initShield = async () => {
+      try {
+        const shield = new ShieldFirewall();
+        shieldRef.current = shield;
+
+        await shield.configure({
+          protectionLevel: 'strict',
+          features: {
+            domProtection: true,
+            networkInterception: true,
+            behaviorAnalysis: true
+          }
+        });
+
+        await shield.initialize();
+        await shield.start();
+      } catch (error) {
+        console.error('SHIELD.js initialization failed:', error);
+      }
+    };
+
+    initShield();
+
+    return () => {
+      if (shieldRef.current) {
+        shieldRef.current.stop();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="secure-app">
+      <h1>Secure React Application</h1>
+      <p>This app is protected by SHIELD.js</p>
+    </div>
+  );
+}
+
+export default SecureApp;
+    </div>
+
+    <h2>Vue.js Integration Example</h2>
+    <div class="code-block">
+// Vue.js Plugin for SHIELD.js
+import { ShieldFirewall } from 'shield-firewall';
+
+export default {
+  install(app, options = {}) {
+    const shield = new ShieldFirewall();
+
+    app.config.globalProperties.$shield = shield;
+    app.provide('shield', shield);
+
+    // Initialize SHIELD.js when app is mounted
+    app.mixin({
+      async mounted() {
+        if (!window.shieldInitialized) {
+          try {
+            await shield.configure({
+              protectionLevel: options.level || 'strict',
+              features: options.features || {
+                domProtection: true,
+                networkInterception: true,
+                behaviorAnalysis: true
+              }
+            });
+
+            await shield.initialize();
+            await shield.start();
+            window.shieldInitialized = true;
+          } catch (error) {
+            console.error('SHIELD.js initialization failed:', error);
+          }
+        }
+      }
+    });
+  }
+};
+
+// Usage in main.js
+import { createApp } from 'vue';
+import ShieldPlugin from './plugins/shield';
+
+const app = createApp(App);
+app.use(ShieldPlugin, {
+  level: 'maximum',
+  features: {
+    predictiveDetection: true,
+    autoRecovery: true
+  }
+});
+    </div>
+
+    <h2>Angular Integration Example</h2>
+    <div class="code-block">
+// Angular Service for SHIELD.js
+import { Injectable } from '@angular/core';
+import { ShieldFirewall } from 'shield-firewall';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ShieldService {
+  private shield: ShieldFirewall;
+
+  constructor() {
+    this.shield = new ShieldFirewall();
+  }
+
+  async initialize(config?: any): Promise<void> {
+    try {
+      await this.shield.configure(config || {
+        protectionLevel: 'strict',
+        features: {
+          domProtection: true,
+          networkInterception: true,
+          behaviorAnalysis: true
+        }
+      });
+
+      await this.shield.initialize();
+      await this.shield.start();
+    } catch (error) {
+      console.error('SHIELD.js initialization failed:', error);
+      throw error;
+    }
+  }
+
+  getShield(): ShieldFirewall {
+    return this.shield;
+  }
+}
+
+// Usage in app.component.ts
+export class AppComponent implements OnInit {
+  constructor(private shieldService: ShieldService) {}
+
+  async ngOnInit() {
+    try {
+      await this.shieldService.initialize();
+      console.log('SHIELD.js protection active');
+    } catch (error) {
+      console.error('Failed to initialize security:', error);
+    }
+  }
+}
+    </div>
+
+    <h2>Vanilla JavaScript Integration</h2>
+    <div class="code-block">
+// Vanilla JavaScript integration
+import { ShieldFirewall } from 'shield-firewall';
+
+class SecureWebApp {
+  constructor(config = {}) {
+    this.shield = new ShieldFirewall();
+    this.config = {
+      protectionLevel: 'strict',
+      features: {
+        domProtection: true,
+        networkInterception: true,
+        behaviorAnalysis: true,
+        ...config.features
+      },
+      ...config
+    };
+  }
+
+  async initialize() {
+    try {
+      await this.shield.configure(this.config);
+      await this.shield.initialize();
+      await this.shield.start();
+
+      console.log('SHIELD.js protection activated');
+      return true;
+    } catch (error) {
+      console.error('SHIELD.js initialization failed:', error);
+      return false;
+    }
+  }
+
+  // Additional security methods
+  async validateContent(content) {
+    return this.shield.validateContent(content);
+  }
+
+  getThreatLog() {
+    return this.shield.getThreatLog();
+  }
+}
+
+// Usage
+const app = new SecureWebApp({
+  protectionLevel: 'maximum',
+  features: {
+    predictiveDetection: true,
+    realTimeMonitoring: true
+  }
+});
+
+app.initialize().then(success => {
+  if (success) {
+    console.log('Application is now secure');
+  }
+});
+    </div>
+
+    <!-- Load SHIELD.js -->
+    <script src="../dist/shield-firewall.min.js"></script>
+
+    <script>
+        // Demonstrate basic integration
+        document.getElementById('status').textContent = 'SHIELD.js loaded - check code examples above for framework integration';
+    </script>
+</body>
+</html>

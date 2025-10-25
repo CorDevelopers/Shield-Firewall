@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIELD.js Basic Example</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .protected { background: #e8f5e8; border: 1px solid #4caf50; color: #2e7d32; }
+        .blocked { background: #ffebee; border: 1px solid #f44336; color: #c62828; }
+    </style>
+</head>
+<body>
+    <h1>SHIELD.js Basic Example</h1>
+
+    <div class="status protected" id="status">
+        Initializing SHIELD.js protection...
+    </div>
+
+    <h2>Test XSS Protection</h2>
+    <button onclick="testXSS()">Test XSS Attack</button>
+    <div id="result"></div>
+
+    <h2>Dynamic Content</h2>
+    <div id="dynamic-content"></div>
+    <button onclick="addContent()">Add Safe Content</button>
+
+    <!-- Load SHIELD.js -->
+    <script src="../dist/shield-firewall.min.js"></script>
+
+    <script>
+        // Initialize SHIELD.js
+        async function initShield() {
+            try {
+                const shield = new ShieldFirewall();
+
+                await shield.configure({
+                    protectionLevel: 'strict',
+                    features: {
+                        domProtection: true,
+                        networkInterception: true,
+                        behaviorAnalysis: true
+                    }
+                });
+
+                await shield.initialize();
+                await shield.start();
+
+                document.getElementById('status').textContent = 'SHIELD.js protection active';
+            } catch (error) {
+                document.getElementById('status').textContent = 'SHIELD.js initialization failed';
+                document.getElementById('status').className = 'status blocked';
+            }
+        }
+
+        function testXSS() {
+            try {
+                // This should be blocked by SHIELD.js
+                const div = document.createElement('div');
+                div.innerHTML = '<script>alert("XSS Attack!")</script><p>Safe content</p>';
+                document.getElementById('result').appendChild(div);
+                document.getElementById('result').innerHTML += '<p>XSS attempt completed</p>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p>XSS blocked: ${error.message}</p>`;
+            }
+        }
+
+        function addContent() {
+            const content = document.createElement('p');
+            content.textContent = `Safe content added at ${new Date().toLocaleTimeString()}`;
+            document.getElementById('dynamic-content').appendChild(content);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initShield);
+    </script>
+</body>
+</html>

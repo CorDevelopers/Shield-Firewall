@@ -1,0 +1,19 @@
+{
+  "name": "shield-firewall-demo",
+  "version": "1.0.0",
+  "description": "Interactive demo for SHIELD.js AI-powered client-side WAF",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "security",
+    "firewall",
+    "waf",
+    "demo",
+    "interactive"
+  ],
+  "author": "SHIELD.js Team",
+  "license": "MIT"
+}

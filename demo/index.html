@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SHIELD.js Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .config-panel {
+            grid-column: span 2;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-item label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .config-item select,
+        .config-item input {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .config-item select:focus,
+        .config-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .attack-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+
+        .threat-log {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .threat-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+
+        .threat-entry.high { border-left-color: #ff6b6b; background: #fff5f5; }
+        .threat-entry.medium { border-left-color: #ffd43b; background: #fff9db; }
+        .threat-entry.low { border-left-color: #51cf66; background: #f6ffed; }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background: #51cf66; }
+        .status-inactive { background: #868e96; }
+        .status-error { background: #ff6b6b; }
+
+        .dashboard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .attack-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .attack-btn {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .attack-btn:hover {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+            transform: translateY(-2px);
+        }
+
+        .attack-btn h3 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .attack-btn p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .config-panel {
+                grid-column: span 1;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ SHIELD.js Interactive Demo</h1>
+            <p>Experience AI-powered client-side web application firewall protection in real-time</p>
+        </div>
+
+        <div class="dashboard">
+            <h2>🛡️ Protection Status</h2>
+            <div class="dashboard-grid">
+                <div class="metric">
+                    <span class="metric-value" id="status-indicator">
+                        <span class="status-indicator status-inactive"></span>
+                        Inactive
+                    </span>
+                    <span class="metric-label">Firewall Status</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="threats-blocked">0</span>
+                    <span class="metric-label">Threats Blocked</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="requests-monitored">0</span>
+                    <span class="metric-label">Requests Monitored</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="uptime">0s</span>
+                    <span class="metric-label">Uptime</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <div class="panel config-panel">
+                <h2>⚙️ Configuration</h2>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="protection-level">Protection Level:</label>
+                        <select id="protection-level">
+                            <option value="basic">Basic</option>
+                            <option value="balanced" selected>Balanced</option>
+                            <option value="strict">Strict</option>
+                            <option value="maximum">Maximum</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="sensitivity">Sensitivity:</label>
+                        <input type="range" id="sensitivity" min="0" max="1" step="0.1" value="0.8">
+                        <span id="sensitivity-value">0.8</span>
+                    </div>
+                    <div class="config-item">
+                        <label for="dom-protection">
+                            <input type="checkbox" id="dom-protection" checked> DOM Protection
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <label for="network-interception">
+                            <input type="checkbox" id="network-interception" checked> Network Interception
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <label for="behavior-analysis">
+                            <input type="checkbox" id="behavior-analysis" checked> Behavior Analysis
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <label for="auto-recovery">
+                            <input type="checkbox" id="auto-recovery" checked> Auto Recovery
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn success" id="start-btn">Start Protection</button>
+                    <button class="btn danger" id="stop-btn" disabled>Stop Protection</button>
+                    <button class="btn" id="reset-btn">Reset Configuration</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🚨 Attack Simulator</h2>
+                <p>Test SHIELD.js protection against various attack vectors:</p>
+                <br />
+                <div class="attack-buttons">
+                    <div class="attack-btn" data-attack="xss">
+                        <h3>XSS Attack</h3>
+                        <p>Inject malicious scripts</p>
+                    </div>
+                    <div class="attack-btn" data-attack="dom">
+                        <h3>DOM Manipulation</h3>
+                        <p>Unauthorized DOM changes</p>
+                    </div>
+                    <div class="attack-btn" data-attack="network">
+                        <h3>Suspicious Request</h3>
+                        <p>Malicious network activity</p>
+                    </div>
+                    <div class="attack-btn" data-attack="behavior">
+                        <h3>Rapid Clicking</h3>
+                        <p>Automated behavior</p>
+                    </div>
+                    <div class="attack-btn" data-attack="custom">
+                        <h3>Custom Attack</h3>
+                        <p>Enter your own payload</p>
+                    </div>
+                </div>
+                <br />
+                <textarea id="custom-attack" class="attack-input" placeholder="Enter custom attack payload here..." rows="3"></textarea>
+                <button class="btn danger" id="execute-custom">Execute Custom Attack</button>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Threat Log</h2>
+                <div id="threat-log" class="threat-log">
+                    <div class="threat-entry low">
+                        <strong>System Ready</strong><br>
+                        SHIELD.js initialized and ready for protection
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🔍 Content Validation</h2>
+                <p>Test content validation:</p>
+                <br />
+                <textarea id="content-test" class="attack-input" placeholder="Enter content to validate..." rows="4"></textarea>
+                <button class="btn" id="validate-btn">Validate Content</button>
+                <div id="validation-result" style="margin-top: 10px; padding: 10px; border-radius: 6px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load SHIELD.js from local build -->
+    <script>
+        // Minimal SHIELD.js implementation for demo
+        class ShieldFirewall {
+            constructor() {
+                this.isActive = false;
+                this.threatsBlocked = 0;
+            }
+
+            async configure(config) {
+                console.log('SHIELD configured:', config);
+                return true;
+            }
+
+            async initialize() {
+                console.log('SHIELD initialized');
+                return true;
+            }
+
+            async start() {
+                this.isActive = true;
+                console.log('SHIELD protection started');
+                document.dispatchEvent(new CustomEvent('shield:started'));
+                return true;
+            }
+
+            async stop() {
+                this.isActive = false;
+                console.log('SHIELD protection stopped');
+                document.dispatchEvent(new CustomEvent('shield:stopped'));
+                return true;
+            }
+
+            validateContent(content) {
+                // Simple content validation for demo
+                const threats = ['<script', 'javascript:', 'onload=', 'onerror='];
+                for (const threat of threats) {
+                    if (content.toLowerCase().includes(threat)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            getStatus() {
+                return {
+                    active: this.isActive,
+                    threatsBlocked: this.threatsBlocked
+                };
+            }
+        }
+
+        // Make it globally available
+        window.ShieldFirewall = ShieldFirewall;
+    </script>
+
+    <script>
+        class DemoController {
+            constructor() {
+                this.shield = null;
+                this.threats = [];
+                this.requests = 0;
+                this.startTime = null;
+                this.uptimeInterval = null;
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.updateSensitivityDisplay();
+            }
+
+            bindEvents() {
+                // Configuration controls
+                document.getElementById('start-btn').addEventListener('click', () => this.startProtection());
+                document.getElementById('stop-btn').addEventListener('click', () => this.stopProtection());
+                document.getElementById('reset-btn').addEventListener('click', () => this.resetConfig());
+                document.getElementById('sensitivity').addEventListener('input', () => this.updateSensitivityDisplay());
+
+                // Attack buttons
+                document.querySelectorAll('.attack-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const attack = e.currentTarget.dataset.attack;
+                        this.executeAttack(attack);
+                    });
+                });
+
+                document.getElementById('execute-custom').addEventListener('click', () => this.executeCustomAttack());
+                document.getElementById('validate-btn').addEventListener('click', () => this.validateContent());
+            }
+
+            async startProtection() {
+                try {
+                    this.shield = new ShieldFirewall();
+                    const config = this.getConfig();
+
+                    await this.shield.configure(config);
+                    await this.shield.initialize();
+                    await this.shield.start();
+
+                    this.startTime = Date.now();
+                    this.startUptimeCounter();
+
+                    this.updateStatus('active');
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('stop-btn').disabled = false;
+
+                    this.addThreatLog('System Started', 'SHIELD.js protection activated', 'low');
+
+                    // Listen for threat events
+                    document.addEventListener('shield:threat-detected', (e) => {
+                        this.handleThreat(e.detail);
+                    });
+
+                    document.addEventListener('shield:threat-blocked', (e) => {
+                        this.handleThreatBlocked(e.detail);
+                    });
+
+                } catch (error) {
+                    console.error('Failed to start protection:', error);
+                    this.addThreatLog('Error', `Failed to start protection: ${error.message}`, 'high');
+                }
+            }
+
+            async stopProtection() {
+                if (this.shield) {
+                    await this.shield.stop();
+                    this.shield = null;
+                }
+
+                this.stopUptimeCounter();
+                this.updateStatus('inactive');
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+
+                this.addThreatLog('System Stopped', 'SHIELD.js protection deactivated', 'low');
+            }
+
+            resetConfig() {
+                document.getElementById('protection-level').value = 'balanced';
+                document.getElementById('sensitivity').value = 0.8;
+                document.getElementById('dom-protection').checked = true;
+                document.getElementById('network-interception').checked = true;
+                document.getElementById('behavior-analysis').checked = true;
+                document.getElementById('auto-recovery').checked = true;
+                this.updateSensitivityDisplay();
+            }
+
+            getConfig() {
+                return {
+                    protectionLevel: document.getElementById('protection-level').value,
+                    features: {
+                        domProtection: document.getElementById('dom-protection').checked,
+                        networkInterception: document.getElementById('network-interception').checked,
+                        behaviorAnalysis: document.getElementById('behavior-analysis').checked,
+                        autoRecovery: document.getElementById('auto-recovery').checked
+                    },
+                    threatDetection: {
+                        sensitivity: parseFloat(document.getElementById('sensitivity').value)
+                    }
+                };
+            }
+
+            updateSensitivityDisplay() {
+                const value = document.getElementById('sensitivity').value;
+                document.getElementById('sensitivity-value').textContent = value;
+            }
+
+            updateStatus(status) {
+                const indicator = document.getElementById('status-indicator');
+                const dot = indicator.querySelector('.status-indicator');
+
+                dot.className = `status-indicator status-${status}`;
+                
+                // Clear existing content
+                while (indicator.firstChild) {
+                    indicator.removeChild(indicator.firstChild);
+                }
+                
+                // Add new status indicator
+                const newDot = document.createElement('span');
+                newDot.className = `status-indicator status-${status}`;
+                indicator.appendChild(newDot);
+                
+                // Add status text
+                const statusText = document.createTextNode(status.charAt(0).toUpperCase() + status.slice(1));
+                indicator.appendChild(statusText);
+            }
+
+            startUptimeCounter() {
+                this.uptimeInterval = setInterval(() => {
+                    if (this.startTime) {
+                        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                        document.getElementById('uptime').textContent = `${elapsed}s`;
+                    }
+                }, 1000);
+            }
+
+            stopUptimeCounter() {
+                if (this.uptimeInterval) {
+                    clearInterval(this.uptimeInterval);
+                    this.uptimeInterval = null;
+                }
+                document.getElementById('uptime').textContent = '0s';
+            }
+
+            executeAttack(type) {
+                if (!this.shield) {
+                    alert('Please start protection first!');
+                    return;
+                }
+
+                switch (type) {
+                    case 'xss':
+                        this.executeXSSAttack();
+                        break;
+                    case 'dom':
+                        this.executeDOMAttack();
+                        break;
+                    case 'network':
+                        this.executeNetworkAttack();
+                        break;
+                    case 'behavior':
+                        this.executeBehaviorAttack();
+                        break;
+                }
+            }
+
+            executeXSSAttack() {
+                const testDiv = document.createElement('div');
+                const scriptElement = document.createElement('script');
+                scriptElement.textContent = 'alert("XSS Attack!")';
+                testDiv.appendChild(scriptElement);
+                testDiv.style.display = 'none';
+                document.body.appendChild(testDiv);
+
+                setTimeout(() => {
+                    document.body.removeChild(testDiv);
+                }, 1000);
+            }
+
+            executeDOMAttack() {
+                // Attempt to manipulate DOM in a suspicious way
+                const elements = document.querySelectorAll('*');
+                for (let i = 0; i < Math.min(10, elements.length); i++) {
+                    elements[i].setAttribute('data-test', 'suspicious-' + Math.random());
+                }
+            }
+
+            async executeNetworkAttack() {
+                try {
+                    // Attempt suspicious network request
+                    await fetch('https://httpbin.org/post', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            sensitive: 'data',
+                            token: 'fake-token',
+                            password: 'secret123'
+                        })
+                    });
+                } catch (e) {
+                    console.log('Network attack simulated');
+                }
+            }
+
+            executeBehaviorAttack() {
+                // Simulate rapid clicking
+                let clicks = 0;
+                const clickInterval = setInterval(() => {
+                    if (clicks < 20) {
+                        document.body.click();
+                        clicks++;
+                    } else {
+                        clearInterval(clickInterval);
+                    }
+                }, 50);
+            }
+
+            executeCustomAttack() {
+                const payload = document.getElementById('custom-attack').value.trim();
+                if (!payload) {
+                    alert('Please enter a custom attack payload!');
+                    return;
+                }
+
+                try {
+                    // Execute the custom payload
+                    eval(payload);
+                } catch (error) {
+                    console.log('Custom attack executed with error:', error);
+                }
+            }
+
+            validateContent() {
+                if (!this.shield) {
+                    alert('Please start protection first!');
+                    return;
+                }
+
+                const content = document.getElementById('content-test').value;
+                const result = this.shield.validateContent ? this.shield.validateContent(content) : true;
+
+                const resultDiv = document.getElementById('validation-result');
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = result ? '#f6ffed' : '#fff5f5';
+                resultDiv.style.border = `2px solid ${result ? '#51cf66' : '#ff6b6b'}`;
+                resultDiv.textContent = result ? '✅ Content is safe' : '❌ Content contains threats';
+            }
+
+            handleThreat(threat) {
+                this.threats.push(threat);
+                document.getElementById('threats-blocked').textContent = this.threats.length;
+                this.addThreatLog(threat.type || 'Threat', threat.description || 'Unknown threat detected', threat.severity || 'medium');
+            }
+
+            handleThreatBlocked(threat) {
+                this.addThreatLog('Blocked', `${threat.type} attack prevented`, 'high');
+            }
+
+            addThreatLog(type, description, severity = 'medium') {
+                const log = document.getElementById('threat-log');
+                const entry = document.createElement('div');
+                entry.className = `threat-entry ${severity}`;
+                
+                const strong = document.createElement('strong');
+                strong.textContent = type;
+                entry.appendChild(strong);
+                
+                entry.appendChild(document.createElement('br'));
+                entry.appendChild(document.createTextNode(description));
+                entry.appendChild(document.createElement('br'));
+                
+                const small = document.createElement('small');
+                small.textContent = new Date().toLocaleTimeString();
+                entry.appendChild(small);
+                
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new DemoController();
+        });
+    </script>
+</body>
+</html>
