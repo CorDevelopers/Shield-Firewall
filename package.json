@@ -31,7 +31,7 @@
     "dev": "rollup -c -w",
         "release": "npm run prebuild && npm run build && npm run docs:build",
     "dist": "node dist.js",
-    "prepublishOnly": "npm run release",
+    "prepublishOnly": "npm run build",
     "version": "npm run build && git add -A dist",
     "postversion": "git push && git push --tags"
   },
