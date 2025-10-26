@@ -1,6 +1,6 @@
 {
   "name": "shield-firewall",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "AI-Powered Client-Side Web Application Firewall - Zero-Knowledge, Predictive Security Protection",
   "main": "dist/shield-firewall.min.js",
